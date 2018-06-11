@@ -4,7 +4,6 @@ from lxml import etree
 
 
 def main():
-
     output = open('samples/samples.txt', 'w', encoding='utf-8')
     types = {'Life': '1', 'Movement': '2', 'Transaction': '3', 'Business': '4',
              'Conflict': '5', 'Contact': '6', 'Personnel': '7', 'Justice': '8'}
@@ -16,15 +15,10 @@ def main():
         files = os.listdir(path)
         for file in files:
             if re.search(r'\.apf\.xml', file):
-                full_txt = ''
-                full_txt_file = file[:-7]+'sgm'
-                full_txt_root = etree.parse(path+'/'+full_txt_file).getroot()
-                for body in full_txt_root.findall('BODY'):
-                    for text in body.findall('TEXT'):
-                        for turn in text.findall('TURN'):
-                            full_txt = turn.text
+                full_txt_file = file[:-7] + 'sgm'
+                full_txt = get_text(path, full_txt_file)
 
-                root = etree.parse(path+'/'+file).getroot()
+                root = etree.parse(path + file).getroot()
                 for doc in root.findall('document'):
                     for event in doc.findall('event'):
                         type = event.get('TYPE')
@@ -35,8 +29,8 @@ def main():
                                 full_txt.replace(seq, '')
                                 seq = seq.replace('\n', '')
                                 seq = seq.replace(' ', '')
-                                temp_text = seq+'\t' + \
-                                    types[type]+'\n'
+                                temp_text = seq + '\t' + \
+                                            types[type] + '\n'
                                 output.write(temp_text)
 
                 full_txt = full_txt.replace('\n', '')
@@ -47,6 +41,16 @@ def main():
                     if seq != '':
                         temp_text = seq + '\t' + '0' + '\n'
                         output.write(temp_text)
+
+
+def get_text(path, file):
+    body = etree.parse(path + file).getroot().find('BODY')
+    if path[-7:-5] == 'bn':
+        return body.xpath('//text()')[-6]
+    if path[-7:-5] == 'nw':
+        return body.xpath('//text()')[-3]
+    if path[-7:-5] == 'wl':
+        return body.xpath('//text()')[-4]
 
 
 if __name__ == '__main__':
