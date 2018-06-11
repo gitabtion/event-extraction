@@ -18,8 +18,6 @@ def main():
             if re.search(r'\.apf\.xml', file):
                 full_txt = ''
                 full_txt_file = file[:-7]+'sgm'
-                # f = open(path+'/'+full_txt_file,encoding='utf-8').read
-                # etree.fromstring(f).getroot()
                 full_txt_root = etree.parse(path+'/'+full_txt_file).getroot()
                 for body in full_txt_root.findall('BODY'):
                     for text in body.findall('TEXT'):
@@ -43,10 +41,9 @@ def main():
 
                 full_txt = full_txt.replace('\n', '')
                 full_txt = full_txt.replace(' ', '')
-                full_txt_seqs = re.split('[^：，\w]', full_txt)
+                full_txt_seqs = re.split(r'。', full_txt)
                 for seq in full_txt_seqs:
-                    seq = seq.replace('\n', '')
-                    seq = seq.replace(' ', '')
+                    seq = re.sub(r'^[：，“”]', '', seq)
                     if seq != '':
                         temp_text = seq + '\t' + '0' + '\n'
                         output.write(temp_text)
