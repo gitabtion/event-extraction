@@ -16,7 +16,7 @@ def main():
         for file in files:
             if re.search(r'\.apf\.xml', file):
                 full_txt_file = file[:-7] + 'sgm'
-                full_txt = get_text(path, full_txt_file)
+                full_txt = _get_text(path, full_txt_file)
 
                 root = etree.parse(path + file).getroot()
                 for doc in root.findall('document'):
@@ -29,21 +29,20 @@ def main():
                                 full_txt.replace(seq, '')
                                 seq = seq.replace('\n', '')
                                 seq = seq.replace(' ', '')
-                                temp_text = seq + '\t' + \
-                                            types[type] + '\n'
+                                temp_text = (types[type] + '\t' + seq + '。\n')
                                 output.write(temp_text)
 
                 full_txt = full_txt.replace('\n', '')
                 full_txt = full_txt.replace(' ', '')
                 full_txt_seqs = re.split(r'。', full_txt)
                 for seq in full_txt_seqs:
-                    seq = re.sub(r'^[：，“”]', '', seq)
+                    seq = re.sub(r'^[：，“”"「」\s]', '', seq)
                     if seq != '':
-                        temp_text = seq + '\t' + '0' + '\n'
+                        temp_text = '0' + '\t' + seq + '。\n'
                         output.write(temp_text)
 
 
-def get_text(path, file):
+def _get_text(path, file):
     body = etree.parse(path + file).getroot().find('BODY')
     if path[-7:-5] == 'bn':
         return body.xpath('//text()')[-6]
