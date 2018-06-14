@@ -5,6 +5,7 @@ from lxml import etree
 
 
 def main():
+    closed_set = set()
     train_set = open('samples/train_set.txt', 'w', encoding='utf-8')
     ver_set = open('samples/ver_set.txt', 'w', encoding='utf-8')
     test_set = open('samples/test_set.txt', 'w', encoding='utf-8')
@@ -14,7 +15,7 @@ def main():
     paths = ['/Users/abtion/workspace/dataset/ace/Chinese/bn/adj/',
              '/Users/abtion/workspace/dataset/ace/Chinese/nw/adj/',
              '/Users/abtion/workspace/dataset/ace/Chinese/wl/adj/']
-    tests, verifys = _get_test_and_verify_set(paths)
+    tests, verifys = _get_test_and_verify_list(paths)
 
     for path in paths:
         files = os.listdir(path)
@@ -36,8 +37,7 @@ def main():
                                 seq = seq.replace('\n', '')
                                 seq = seq.replace(' ', '')
                                 temp_text = (types[type] + '\t' + seq + '。\n')
-                                # output.write(temp_text)
-                                _output(file, verifys, tests, train_set, ver_set, test_set, temp_text)
+                                _output(file, verifys, tests, train_set, ver_set, test_set, temp_text, closed_set)
 
                 full_txt = full_txt.replace('\n', '')
                 full_txt = full_txt.replace(' ', '')
@@ -46,10 +46,19 @@ def main():
                     seq = re.sub(r'^[：，“”"「」\s]', '', seq)
                     if seq != '':
                         temp_text = '0' + '\t' + seq + '。\n'
-                        _output(file, verifys, tests, train_set, ver_set, test_set, temp_text)
+                        _output(file, verifys, tests, train_set, ver_set, test_set, temp_text, closed_set)
 
 
-def _get_test_and_verify_set(paths):
+def _get_test_and_verify_list(paths):
+    """
+    获取测试集和验证集的文件名列表
+    共633个文件，其中：
+    测试集： 66个文件
+    训练集： 567个文件
+    验证集： 在测试集中随机取33个文件
+    :param paths: 路径列表
+    :return: 测试集和验证集的文件名列表
+    """
     files = []
     verifies = []
     tests = []
@@ -68,22 +77,43 @@ def _get_test_and_verify_set(paths):
     return tests, verifies
 
 
-def _output(file, verifies, tests, train, ver_set, test_set, seq):
-    if file in verifies:
-        ver_set.write(seq)
-        train.write(seq)
-    elif file in tests:
-        test_set.write(seq)
-    else:
-        train.write(seq)
+def _output(file, verifies, tests, train_set, ver_set, test_set, seq, closed_set):
+    """
+    将单行文本输出至对于文件
+    :param file: 当前读取的文件名
+    :param verifies: 验证集文件名列表
+    :param tests: 测试集文件名列表
+    :param train_set: 训练集文件
+    :param ver_set: 验证集文件
+    :param test_set: 测试集文件
+    :param seq: 单行样本
+    :param closed_set: 已输出的样本集合
+    :return: None
+    """
+    if seq not in closed_set:
+        if file in verifies:
+            ver_set.write(seq)
+            train_set.write(seq)
+        elif file in tests:
+            test_set.write(seq)
+        else:
+            train_set.write(seq)
+        closed_set.add(seq)
 
 
 def _get_text(path, file):
+    """
+    解析全文XML，获取所需文本
+    :param path: 文件路径
+    :param file: 文件名
+    :return: string类型的文本
+    """
     body = etree.parse(path + file).getroot().find('BODY')
+    temp_str = ''
     if path[-7:-5] == 'bn':
-        return body.xpath('//TURN[1]/text()')[0]
+        return temp_str.join(body.xpath('//TURN/text()'))
     if path[-7:-5] == 'nw':
-        return body.xpath('//TEXT[1]/text()')[0]
+        return temp_str.join(body.xpath('//TEXT/text()'))
     if path[-7:-5] == 'wl':
         return body.xpath('//POST[1]/text()')[2]
 
