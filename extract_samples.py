@@ -55,7 +55,7 @@ def _get_test_and_verify_list(paths):
     """
     获取测试集和验证集的文件名列表
     共633个文件，其中：
-    测试集： 66个文件
+    测试集： 66个文件,从test_set_name.txt中取
     训练集： 567个文件
     验证集： 在测试集中随机取33个文件
     :param paths: 路径列表
@@ -63,19 +63,17 @@ def _get_test_and_verify_list(paths):
     """
     files = []
     verifies = []
-    tests = []
     for path in paths:
         files.extend(os.listdir(path))
     random.shuffle(files)
 
+    test_set_names = open('test_set_name.txt', encoding='utf-8').read()
+    tests = test_set_names.split('\n')
     for file in files:
-        if re.search(r'\.apf\.xml', file):
-            if len(verifies) < 33:
-                verifies.append(file)
-            elif len(tests) < 66:
-                tests.append(file)
-            else:
-                break
+        if re.search(r'\.apf\.xml', file) and len(verifies) < 33 and file[:-8] not in tests:
+            verifies.append(file)
+        if len(verifies) >= 33:
+            break
     return tests, verifies
 
 
@@ -98,7 +96,7 @@ def _output(file, verifies, tests, train_set, ver_set, test_set, seq, closed_set
             if file in verifies:
                 ver_set.write(seq)
                 train_set.write(seq)
-            elif file in tests:
+            elif file[:-8] in tests:
                 test_set.write(seq)
             else:
                 train_set.write(seq)
