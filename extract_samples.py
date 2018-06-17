@@ -44,7 +44,7 @@ def main():
 
                 full_txt_seqs = re.split(r'。', full_txt)
                 for seq in full_txt_seqs:
-                    seq = re.sub(r'^[：，“”"「」\s]', '', seq)
+                    seq = re.sub(r'^[：，“”".「」\s]+', '', seq)
                     if seq != '':
                         temp_text = '0' + '\t' + seq + '。\n'
                         _output(file, verifies, tests, train_set,
@@ -123,3 +123,4 @@ def _get_text(path, file):
 
 if __name__ == '__main__':
     main()
+
