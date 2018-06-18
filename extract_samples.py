@@ -24,8 +24,7 @@ def main():
             if re.search(r'\.apf\.xml', file):
                 full_txt_file = file[:-7] + 'sgm'
                 full_txt = _get_text(path, full_txt_file)
-                full_txt = full_txt.replace('\n', '')
-                full_txt = full_txt.replace(' ', '')
+                full_txt = re.sub(r'[\s]+', '', full_txt)
 
                 root = etree.parse(path + file).getroot()
                 for doc in root.findall('document'):
@@ -34,17 +33,16 @@ def main():
                         for event_mention in event.findall('event_mention'):
                             for ldc in event_mention.findall('ldc_scope'):
                                 seq = ldc.find('charseq').text
-                                full_txt.replace(seq, '')
-                                seq = seq.replace('\n', '')
-                                seq = seq.replace(' ', '')
-                                full_txt.replace(seq, '')
+                                seq = re.sub(r'[\s]+', '', seq)
+                                full_txt = full_txt.replace(seq, '')
                                 temp_text = (types[type] + '\t' + seq + '。\n')
                                 _output(file, verifies, tests, train_set,
                                         ver_set, test_set, temp_text, closed_set)
 
                 full_txt_seqs = re.split(r'。', full_txt)
                 for seq in full_txt_seqs:
-                    seq = re.sub(r'^[：，“”".「」\s]+', '', seq)
+                    seq = re.sub(r'^\W+', '', seq)
+                    seq = re.sub(r'\W+$', '', seq)
                     if seq != '':
                         temp_text = '0' + '\t' + seq + '。\n'
                         _output(file, verifies, tests, train_set,
@@ -123,4 +121,3 @@ def _get_text(path, file):
 
 if __name__ == '__main__':
     main()
-
