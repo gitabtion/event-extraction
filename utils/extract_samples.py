@@ -6,9 +6,9 @@ from lxml import etree
 
 def main():
     closed_set = set()
-    train_set = open('samples/train_set.txt', 'w', encoding='utf-8')
-    ver_set = open('samples/ver_set.txt', 'w', encoding='utf-8')
-    test_set = open('samples/test_set.txt', 'w', encoding='utf-8')
+    train_set = open('./data/train_set.txt', 'w', encoding='utf-8')
+    ver_set = open('./data/ver_set.txt', 'w', encoding='utf-8')
+    test_set = open('./data/test_set.txt', 'w', encoding='utf-8')
     types = {'Life': '1', 'Movement': '2', 'Transaction': '3', 'Business': '4',
              'Conflict': '5', 'Contact': '6', 'Personnel': '7', 'Justice': '8'}
 
@@ -48,6 +48,10 @@ def main():
                         _output(file, verifies, tests, train_set,
                                 ver_set, test_set, temp_text, closed_set)
 
+    train_set.close()
+    ver_set.close()
+    test_set.close()
+
 
 def _get_test_and_verify_list(paths):
     """
@@ -55,7 +59,7 @@ def _get_test_and_verify_list(paths):
     共633个文件，其中：
     测试集： 66个文件,从test_set_name.txt中取
     训练集： 567个文件
-    验证集： 在测试集中随机取33个文件
+    验证集： 在训练集中随机取33个文件
     :param paths: 路径列表
     :return: 测试集和验证集的文件名列表
     """
@@ -65,7 +69,7 @@ def _get_test_and_verify_list(paths):
         files.extend(os.listdir(path))
     random.shuffle(files)
 
-    test_set_names = open('test_set_name.txt', encoding='utf-8').read()
+    test_set_names = open('./data/test_set_name.txt', encoding='utf-8').read()
     tests = test_set_names.split('\n')
     for file in files:
         if re.search(r'\.apf\.xml', file) and len(verifies) < 33 and file[:-8] not in tests:
@@ -93,7 +97,6 @@ def _output(file, verifies, tests, train_set, ver_set, test_set, seq, closed_set
 
             if file in verifies:
                 ver_set.write(seq)
-                train_set.write(seq)
             elif file[:-8] in tests:
                 test_set.write(seq)
             else:
