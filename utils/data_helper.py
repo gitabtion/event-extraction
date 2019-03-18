@@ -15,6 +15,11 @@ class DataHelper(object):
         self.seg_test_text = []  # 分词后的测试集
         self.seg_ver_text = []  # 分词后的验证集
         self.stopwords = []
+        self.word_set = set()
+        self.word_dict = {}
+        self._divide()
+        self._segment()
+        self._gen_word_dict()
 
     def _divide(self):
         with open('./data/train_set.txt', encoding='utf-8') as f:
@@ -42,7 +47,9 @@ class DataHelper(object):
         segmentor = Segmentor()  # 初始化实例
         segmentor.load(cws_model_path)  # 加载模型
         for t in self.train_texts:  # 对训练集分词
-            words = ' '.join(segmentor.segment(t))
+            temp_words = segmentor.segment(t)
+            words = ' '.join(temp_words)
+            self.word_set = self.word_set | set(temp_words)
             self.seg_train_text.append(words)
         for t in self.test_texts:  # 对测试集分词
             words = ' '.join(segmentor.segment(t))
@@ -57,8 +64,26 @@ class DataHelper(object):
         return self.stopwords
 
     def get_data_and_labels(self):
-        self._divide()
-        self._segment()
         return (self.seg_train_text, self.train_labels,
                 self.seg_ver_text, self.ver_labels,
                 self.seg_test_text, self.test_labels)
+
+    def get_word_set(self):
+        return self.word_set
+
+    def _gen_word_dict(self):
+        _words = list(self.word_set)
+        _values = list(i for i in range(len(_words)))
+        _wvs = zip(_words, _values)
+        self.word_dict = dict((name, value) for name, value in _wvs)
+        self.word_dict['<UN>'] = len(_words)
+
+    def get_word_dict(self):
+        return self.word_dict
+
+    def line2array(self, seq):
+        _words = seq.split(' ')
+        _rst = []
+        for w in _words:
+            _rst.append(self.word_dict[w] if w in self.word_dict.keys() else self.word_dict['<UN>'])
+        return _rst
