@@ -42,7 +42,7 @@ class DataHelper(object):
             self.ver_texts.append(t[1].rstrip())
 
     def _segment(self):
-        ltp_data_dir = '/Users/abtion/workspace/dataset/ltp_data_v3.4.0'  # ltp模型目录的路径
+        ltp_data_dir = '/data2/stu02/dataset/ltp_data_v3.4.0'  # ltp模型目录的路径
         cws_model_path = os.path.join(ltp_data_dir, 'cws.model')
         segmentor = Segmentor()  # 初始化实例
         segmentor.load(cws_model_path)  # 加载模型
@@ -73,17 +73,11 @@ class DataHelper(object):
 
     def _gen_word_dict(self):
         _words = list(self.word_set)
-        _values = list(i for i in range(len(_words)))
+        _values = list(i+1 for i in range(len(_words)))
         _wvs = zip(_words, _values)
         self.word_dict = dict((name, value) for name, value in _wvs)
-        self.word_dict['<UN>'] = len(_words)
+        self.word_dict['<UN>'] = len(_words)+1
+        self.word_dict['<PAD>'] = 0
 
     def get_word_dict(self):
         return self.word_dict
-
-    def line2array(self, seq):
-        _words = seq.split(' ')
-        _rst = []
-        for w in _words:
-            _rst.append(self.word_dict[w] if w in self.word_dict.keys() else self.word_dict['<UN>'])
-        return _rst
